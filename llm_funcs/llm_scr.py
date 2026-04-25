@@ -1,7 +1,6 @@
 # Local Imports
 
 # Partial Imports
-#from openai import OpenAI  #NOTE: YUCK
 
 # Full Imports
 import requests
@@ -42,14 +41,6 @@ def get_user_input(user_input):
         "role": "user",
         "content": user_input
     }
-
-
-def get_full_system_message():
-    return [get_system_message(), get_history_file_contents()]
-
-
-def get_messages(system_message, user_input):
-    return [system_message, user_input]
 
 
 def get_full_messages(user_input):
