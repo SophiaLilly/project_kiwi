@@ -1,11 +1,15 @@
 # Local Imports
 
+
 # Partial Imports
 
 # Full Imports
-import requests
-import yaml
 import json
+import queue
+import re
+import requests
+import threading
+import yaml
 
 
 def get_char_config_file():
@@ -55,7 +59,7 @@ def set_history(history):
         json.dump(history, f, indent=2)
 
 
-def stream_llm_response(messages):
+def get_stream(messages):
     response = requests.post(
         "http://localhost:11434/api/chat",
         json={
@@ -71,8 +75,10 @@ def stream_llm_response(messages):
             continue
 
         data = json.loads(line.decode())
-        if "message" in data:
-            yield data["message"].get("content", "")
+        yield data["message"]["content"]
+
+
+
 
 
 def get_llm_response(user_input):
@@ -80,7 +86,7 @@ def get_llm_response(user_input):
     user_message = get_user_input(user_input)
     messages = get_full_messages(user_input)
 
-    response = "".join(stream_llm_response(messages))
+    response = "".join(get_stream(messages))
     assistant_message = {
         "role": "assistant",
         "content": response

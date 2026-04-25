@@ -13,6 +13,7 @@ in a way that made more sense to me, so there are significant changes to the cod
 
 **Tested with Python 3.12 on Linux Mint 22.2 (Zara)**
 
+
 ## Design Philosophy
 - **Run everything locally.** I want this to be able to run fully offline with zero external dependencies.
 - **Keep it modular.** Within reason, each component should be able to run independently for testing and development purposes.
