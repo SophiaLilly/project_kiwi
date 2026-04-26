@@ -8,3 +8,7 @@ llm_funcs/__pycache__/
 token
 
 tts_funcs/__pycache__/
+
+runtime/__pycache__/
+
+*.pyc

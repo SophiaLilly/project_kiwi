@@ -1,4 +1,7 @@
+# vad.py
+
 # Local Imports
+from collections import deque
 
 # Partial Imports
 from faster_whisper import WhisperModel
@@ -23,14 +26,16 @@ FRAME_SIZE_MIC = int(MIC_SR * FRAME_MS / 1000)
 CHUNK_MS = 500
 CHUNK_SIZE = int(MIC_SR * CHUNK_MS / 1000)
 
-audio_queue = queue.Queue(maxsize=256)
+audio_buffer = deque(maxlen=44100 * 10)
+text_queue = queue.Queue(maxsize=256)
 buffer = []
+buffer_lock = threading.Lock()
 
 
 silero_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
 (get_speech_timestamps, _, read_audio, _, _) = utils
 
-whisper_model = WhisperModel("base", device="cuda", compute_type="float16")
+whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
 
 
 def audio_callback(in_data, frame_count, time_info, status_flags):
@@ -38,56 +43,8 @@ def audio_callback(in_data, frame_count, time_info, status_flags):
         print(f"Audio callback status: {status_flags}")
 
     audio = in_data[:, 0].copy()
-    try:
-        audio_queue.put_nowait(audio)
-    except queue.Full:
-        audio_queue.get_nowait()
-        audio_queue.put_nowait(audio)
-
-
-def audio_consumer():
-    print("Listening.")
-    while True:
-        audio = audio_queue.get()
-        peak = np.max(np.abs(audio))
-        print(f"Audio frame received | {peak=:.4f}")
-
-
-# def vad_loop():
-#     print("Listening.")
-#     frame_buffer = []
-#
-#     while True:
-#         frame = audio_queue.get()
-#         frame_buffer.append(frame)
-#
-#         if len(frame_buffer) < 10:
-#             continue
-#
-#         raw = np.concatenate(frame_buffer)
-#         frame_buffer.clear()
-#
-#         audio_16k = resample_poly(raw, TARGET_SR, MIC_SR)
-#
-#         peak = np.max(np.abs(audio_16k)) + 1e-6
-#         audio_16k = audio_16k / peak
-#
-#         num_chunks = len(audio_16k) // 512
-#         if num_chunks == 0:
-#             continue
-#
-#         trimmed = audio_16k[:num_chunks * 512]
-#         chunks = trimmed.reshape(num_chunks, 512)
-#
-#         audio_tensor = torch.from_numpy(chunks).float()
-#         speech_probs = silero_model(audio_tensor, TARGET_SR)
-#
-#         for prob in speech_probs:
-#             speech_prob = prob.item()
-#             if speech_prob > 0.7:
-#                 print(f"SPEECH {speech_prob=:.3f}")
-#             else:
-#                 print(f"noise  {speech_prob=:.3f}")
+    with buffer_lock:
+        audio_buffer.extend(audio)
 
 
 def process_speech(audio_16k):
@@ -96,9 +53,20 @@ def process_speech(audio_16k):
 
     segments, _ = whisper_model.transcribe(audio_16k, language="en")
     text = "".join(s.text for s in segments).strip()
+    if text == ". . . .":
+        return
 
     if text:
         print("HEARD:", text)
+        text_queue.put(text)
+
+
+def get_audio_block(n):
+    with buffer_lock:
+        if len(audio_buffer) < n:
+            return None
+        chunk = np.array([audio_buffer.popleft() for _ in range(n)])
+    return chunk
 
 
 def asr_loop():
@@ -113,7 +81,9 @@ def asr_loop():
     MAX_SILENCE_FRAMES = 10
 
     while True:
-        frame = audio_queue.get()
+        frame = get_audio_block(1024)
+        if frame is None:
+            continue
         frame_buffer.append(frame)
 
         if len(frame_buffer) < 10:
@@ -123,9 +93,6 @@ def asr_loop():
         frame_buffer.clear()
 
         audio_16k = resample_poly(raw, TARGET_SR, MIC_SR)
-
-        peak = np.max(np.abs(audio_16k)) + 1e-6
-        audio_16k = audio_16k / peak
 
         num_chunks = len(audio_16k) // 512
         if num_chunks == 0:
@@ -169,7 +136,7 @@ def asr_loop():
 def run_asr():
     #vad_thread = threading.Thread(target=vad_loop, daemon=True)
     #vad_thread.start()
-    asr_thread = threading.Thread(target=asr_loop)
+    asr_thread = threading.Thread(target=asr_loop, daemon=True)
     asr_thread.start()
 
     with sd.InputStream(
@@ -179,11 +146,16 @@ def run_asr():
             blocksize=0,
             callback=audio_callback,
             device=4,
-            latency="high"
+            latency=0.5
     ):
         while True:
             time.sleep(1)
 
 
+def get_text_queue():
+    return text_queue
+
+
 if __name__ == "__main__":
+    print("Running vad.py as main. Is this intended?")
     run_asr()

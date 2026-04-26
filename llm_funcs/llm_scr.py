@@ -1,4 +1,7 @@
+# llm_scr.py
+
 # Local Imports
+from runtime.gpu import gpu_lock
 
 # Partial Imports
 
@@ -61,7 +64,7 @@ def get_stream(messages):
         json={
             "model": get_model(),
             "messages": messages,
-            "stream": True
+            "stream": True,
         },
         stream=True
     )
@@ -83,6 +86,7 @@ def get_llm_response(user_input):
     messages = get_full_messages(user_input)
 
     response = "".join(get_stream(messages))
+
     assistant_message = {
         "role": "assistant",
         "content": response

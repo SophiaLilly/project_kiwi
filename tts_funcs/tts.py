@@ -1,4 +1,6 @@
+# tts.py
 # Local Imports
+from runtime.gpu import gpu_lock
 
 # Partial Imports
 from chatterbox.tts_turbo import ChatterboxTurboTTS
@@ -6,20 +8,28 @@ from chatterbox.tts_turbo import ChatterboxTurboTTS
 # Full Imports
 import sounddevice as sd
 import soundfile as sf
+import threading
 import torchaudio as ta
 import torch
 
 
 model = ChatterboxTurboTTS.from_pretrained(device="cuda")
-model.t3.to(dtype=torch.bfloat16)
+model.t3.to(device="cuda")
+model.t3.eval()
+
+
+original_path = "/home/elodie/Projects/riko_project_clone/character_files/main_sample.wav"
 
 
 def generate_voice_clip(text):
+    print("Generating voice clip")
+
     with torch.no_grad(), torch.amp.autocast("cuda"):
-        wav = model.generate(text, audio_prompt_path="/home/elodie/Projects/riko_project_clone/character_files/main_sample.wav")
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
-    return wav
+        wav = model.generate(
+            text,
+            audio_prompt_path=original_path,
+        )
+    return wav.detach().cpu().clone(), model.sr
 
 
 def save_voice_clip(wav, file_name="voice_clip.wav"):

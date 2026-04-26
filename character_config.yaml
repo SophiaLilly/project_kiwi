@@ -1,5 +1,5 @@
 history_file: chat_history.json
-model: "llama3.1"
+model: "phi3:mini"
 
 presets:
   default:
