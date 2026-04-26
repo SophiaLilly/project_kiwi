@@ -1,8 +1,14 @@
-import soundfile as sf
+# Local Imports
+
+# Partial Imports
+from chatterbox.tts_turbo import ChatterboxTurboTTS
+
+# Full Imports
 import sounddevice as sd
+import soundfile as sf
 import torchaudio as ta
 import torch
-from chatterbox.tts_turbo import ChatterboxTurboTTS
+
 
 model = ChatterboxTurboTTS.from_pretrained(device="cuda")
 model.t3.to(dtype=torch.bfloat16)

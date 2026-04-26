@@ -1,13 +1,15 @@
-import time
-
-import torch
-
+# Local Imports
 from llm_funcs import llm_scr
+from stt_funcs.vad import run_asr
 from tts_funcs.tts import generate_voice_clip, save_voice_clip, play_voice_clip
 
+# Partial Imports
 
+# Full Imports
 import queue
 import re
+import time
+import torch
 
 
 def split_sentences(text):
