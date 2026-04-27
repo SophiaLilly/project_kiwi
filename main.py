@@ -7,6 +7,7 @@
 
 # Full Imports
 import queue
+import sys
 import threading
 import time
 
@@ -17,24 +18,29 @@ import time
 MODE = "CLI"
 
 
+class VoiceContext:
+    def __init__(self):
+        self.tts_queue = queue.Queue()
+        self.play_queue = queue.Queue()
+
+
 def run_voice_mode():
     from modules.asr_funcs.asr import run_asr
     from modules.tts_funcs.workers import tts_worker, audio_player
     from modules.asr_funcs.workers import asr_consumer
 
-    tts_queue = queue.Queue()
-    play_queue = queue.Queue()
+    ctx = VoiceContext()
 
-    threading.Thread(target=run_asr).start()
-    threading.Thread(target=asr_consumer, args=(tts_queue,)).start()
-    threading.Thread(target=tts_worker, args=(tts_queue, play_queue)).start()
-    threading.Thread(target=audio_player, args=(play_queue,)).start()
+    threading.Thread(target=run_asr, daemon=True).start()
+    threading.Thread(target=asr_consumer, daemon=True, args=(ctx,)).start()
+    threading.Thread(target=tts_worker, daemon=True, args=(ctx,)).start()
+    threading.Thread(target=audio_player, daemon=True, args=(ctx,)).start()
 
 
 def run_cli_mode():
     from modules.llm_funcs.cli_worker import cli_consumer
 
-    threading.Thread(target=cli_consumer, daemon=True).start()
+    cli_consumer()
 
 
 if __name__ == "__main__":
@@ -46,7 +52,12 @@ if __name__ == "__main__":
         run_cli_mode()
     else:
         print(f"Error: Unknown mode '{MODE}'. Use 'voice' or 'cli'.")
-        exit(1)
+        sys.exit()
 
-    while True:
-        time.sleep(1)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Shutting down.")
+        sys.exit()
+

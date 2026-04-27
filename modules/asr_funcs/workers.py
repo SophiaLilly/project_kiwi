@@ -12,7 +12,7 @@ from modules.utils import split_sentences
 import time
 
 
-def asr_consumer(tts_queue):
+def asr_consumer(ctx):
     while True:
         text = get_text_queue().get()
         print(f"> {text}")
@@ -22,5 +22,5 @@ def asr_consumer(tts_queue):
 
         chunks = split_sentences(response)
         for chunk in chunks:
-            tts_queue.put(chunk)
+            ctx.tts_queue.put(chunk)
             time.sleep(0.01)

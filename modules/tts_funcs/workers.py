@@ -13,13 +13,13 @@ import time
 import torch
 
 
-def tts_worker(tts_queue, play_queue):
+def tts_worker(ctx):
     while True:
-        chunk = tts_queue.get()
+        chunk = ctx.tts_queue.get()
         try:
             vc = generate_voice_clip(chunk)
             save_voice_clip(vc)
-            play_queue.put(vc)
+            ctx.play_queue.put(vc)
 
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
@@ -28,12 +28,11 @@ def tts_worker(tts_queue, play_queue):
             print(f"TTS failed (continuing without voice): {e}")
 
 
-def audio_player(play_queue):
-    current = None
-
+def audio_player(ctx):
+    # current = None
     while True:
         try:
-            current = play_queue.get_nowait()
+            current = ctx.play_queue.get_nowait()
         except queue.Empty:
             time.sleep(0.01)
             continue
