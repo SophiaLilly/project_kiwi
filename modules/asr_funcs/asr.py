@@ -132,7 +132,6 @@ def asr_loop():
                         silence_count = 0
 
 
-
 def run_asr():
     #vad_thread = threading.Thread(target=vad_loop, daemon=True)
     #vad_thread.start()

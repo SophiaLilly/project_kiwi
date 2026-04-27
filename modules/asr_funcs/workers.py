@@ -24,4 +24,3 @@ def asr_consumer(tts_queue):
         for chunk in chunks:
             tts_queue.put(chunk)
             time.sleep(0.01)
-

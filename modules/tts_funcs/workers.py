@@ -13,8 +13,6 @@ import time
 import torch
 
 
-
-
 def tts_worker(tts_queue, play_queue):
     while True:
         chunk = tts_queue.get()
@@ -42,4 +40,3 @@ def audio_player(play_queue):
 
         wav, sr = current
         sd.play(wav, sr, blocking=False)
-

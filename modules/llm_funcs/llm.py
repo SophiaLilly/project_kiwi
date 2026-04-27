@@ -76,9 +76,6 @@ def get_stream(messages):
         yield data["message"]["content"]
 
 
-
-
-
 def get_llm_response(user_input):
     history = get_history_file_contents()
     user_message = get_user_input(user_input)
