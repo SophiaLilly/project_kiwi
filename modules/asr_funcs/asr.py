@@ -31,11 +31,30 @@ text_queue = queue.Queue(maxsize=256)
 buffer = []
 buffer_lock = threading.Lock()
 
+# Lazy-loaded models
+silero_model = None
+utils = None
+whisper_model = None
 
-silero_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
-(get_speech_timestamps, _, read_audio, _, _) = utils
 
-whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+def get_silero_model():
+    """Lazy-load Silero VAD model."""
+    global silero_model, utils
+    if silero_model is None:
+        print("Loading Silero VAD model...")
+        silero_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
+        print("Silero VAD model loaded.")
+    return silero_model, utils
+
+
+def get_whisper_model():
+    """Lazy-load Whisper model."""
+    global whisper_model
+    if whisper_model is None:
+        print("Loading Whisper model...")
+        whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+        print("Whisper model loaded.")
+    return whisper_model
 
 
 def audio_callback(in_data, frame_count, time_info, status_flags):
@@ -48,6 +67,7 @@ def audio_callback(in_data, frame_count, time_info, status_flags):
 
 
 def process_speech(audio_16k):
+    whisper_model = get_whisper_model()
     peak = np.max(np.abs(audio_16k)) + 1e-6
     audio_16k = audio_16k / peak
 
@@ -71,6 +91,9 @@ def get_audio_block(n):
 
 def asr_loop():
     print("Listening.")
+    silero_model, utils = get_silero_model()
+    (get_speech_timestamps, _, read_audio, _, _) = utils
+
     frame_buffer = []
     triggered = False
     speech_buffer = []
@@ -133,8 +156,6 @@ def asr_loop():
 
 
 def run_asr():
-    #vad_thread = threading.Thread(target=vad_loop, daemon=True)
-    #vad_thread.start()
     asr_thread = threading.Thread(target=asr_loop, daemon=True)
     asr_thread.start()
 

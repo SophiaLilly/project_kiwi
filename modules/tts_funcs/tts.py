@@ -11,16 +11,24 @@ import torchaudio as ta
 import torch
 
 
-model = ChatterboxTurboTTS.from_pretrained(device="cuda")
-model.t3.to(device="cuda")
-model.t3.eval()
+model = None
+original_path = "character_files/main_sample.wav"
 
 
-original_path = "/character_files/main_sample.wav"
+def get_model():
+    global model
+    if model is None:
+        print("Loading TTS model...")
+        model = ChatterboxTurboTTS.from_pretrained(device="cuda")
+        model.t3.to(device="cuda")
+        model.t3.eval()
+        print("TTS model loaded.")
+    return model
 
 
 def generate_voice_clip(text):
-    print("Generating voice clip")
+    print("Generating voice clip.")
+    model = get_model()
 
     with torch.no_grad(), torch.amp.autocast("cuda"):
         wav = model.generate(
@@ -31,6 +39,7 @@ def generate_voice_clip(text):
 
 
 def save_voice_clip(wav, file_name="voice_clip.wav"):
+    model = get_model()
     ta.save(file_name, wav, model.sr)
 
 

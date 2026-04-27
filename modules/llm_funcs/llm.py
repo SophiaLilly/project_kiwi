@@ -11,7 +11,7 @@ import yaml
 
 
 def get_char_config_file():
-    with open("/character_config.yaml", 'r') as f:
+    with open("character_config.yaml", 'r') as f:
         return yaml.safe_load(f)
 
 
