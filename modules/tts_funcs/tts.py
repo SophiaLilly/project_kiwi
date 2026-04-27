@@ -1,6 +1,5 @@
 # tts.py
 # Local Imports
-from runtime.gpu import gpu_lock
 
 # Partial Imports
 from chatterbox.tts_turbo import ChatterboxTurboTTS
@@ -8,7 +7,6 @@ from chatterbox.tts_turbo import ChatterboxTurboTTS
 # Full Imports
 import sounddevice as sd
 import soundfile as sf
-import threading
 import torchaudio as ta
 import torch
 
@@ -18,7 +16,7 @@ model.t3.to(device="cuda")
 model.t3.eval()
 
 
-original_path = "/home/elodie/Projects/riko_project_clone/character_files/main_sample.wav"
+original_path = "/character_files/main_sample.wav"
 
 
 def generate_voice_clip(text):
@@ -46,4 +44,4 @@ if __name__ == "__main__":
     print("Running tts.py as main. Is this intended?")
     vc = generate_voice_clip("Hi there, my name is Kiwi!")
     save_voice_clip(vc)
-    play_voice_clip("/home/elodie/Projects/riko_project_clone/tts_funcs/voice_clip.wav")
+    play_voice_clip("/modules/tts_funcs/voice_clip.wav")

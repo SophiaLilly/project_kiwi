@@ -1,7 +1,6 @@
-# llm_scr.py
+# llm.py
 
 # Local Imports
-from runtime.gpu import gpu_lock
 
 # Partial Imports
 
@@ -12,7 +11,7 @@ import yaml
 
 
 def get_char_config_file():
-    with open("/home/elodie/Projects/riko_project_clone/character_config.yaml", 'r') as f:
+    with open("/character_config.yaml", 'r') as f:
         return yaml.safe_load(f)
 
 
@@ -99,5 +98,5 @@ def get_llm_response(user_input):
 
 
 if __name__ == "__main__":
-    print('Running llm_scr.py as main. Is this intended?')
+    print('Running llm.py as main. Is this intended?')
     print(get_llm_response("Hello."))

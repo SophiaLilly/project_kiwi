@@ -1,14 +1,14 @@
 
-llm_funcs/__pycache__/
+modules/llm_funcs/__pycache__/
 
 *.json
 
 *.wav
 
-token
+modules/discord/token
 
-tts_funcs/__pycache__/
+modules/tts_funcs/__pycache__/
 
-runtime/__pycache__/
+modules/runtime/__pycache__/
 
 *.pyc

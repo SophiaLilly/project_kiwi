@@ -1,4 +1,4 @@
-# vad.py
+# asr.py
 
 # Local Imports
 from collections import deque
@@ -157,5 +157,5 @@ def get_text_queue():
 
 
 if __name__ == "__main__":
-    print("Running vad.py as main. Is this intended?")
+    print("Running asr.py as main. Is this intended?")
     run_asr()

@@ -1,0 +1,27 @@
+# workers.py
+# Main worker threads orchestrating the full pipeline
+
+# Local Imports
+from modules.llm_funcs import llm
+from modules.asr_funcs.asr import get_text_queue
+from modules.utils import split_sentences
+
+# Partial Imports
+
+# Full Imports
+import time
+
+
+def asr_consumer(tts_queue):
+    while True:
+        text = get_text_queue().get()
+        print(f"> {text}")
+
+        response = llm.get_llm_response(text)
+        print(f"< {response}")
+
+        chunks = split_sentences(response)
+        for chunk in chunks:
+            tts_queue.put(chunk)
+            time.sleep(0.01)
+
