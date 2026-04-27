@@ -1,60 +1,14 @@
 # llm.py
 
 # Local Imports
+from .config import get_char_config_file, get_model, get_system_message, get_user_input
+from .memory import get_history_file_contents, set_history, get_full_messages
 
 # Partial Imports
 
 # Full Imports
 import json
 import requests
-import yaml
-
-
-def get_char_config_file():
-    with open("character_config.yaml", 'r') as f:
-        return yaml.safe_load(f)
-
-
-def get_model():
-    return get_char_config_file()['model']
-
-
-def get_history_file_path():
-    return get_char_config_file()['history_file']
-
-
-def get_history_file_contents():
-    try:
-        with open(get_history_file_path(), 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
-
-
-def get_system_message():
-    return {
-        "role": "system",
-        "content": get_char_config_file()['presets']['default']['system_prompt']
-    }
-
-
-def get_user_input(user_input):
-    return {
-        "role": "user",
-        "content": user_input
-    }
-
-
-def get_full_messages(user_input):
-    messages = [get_system_message()]
-    messages.extend(get_history_file_contents())
-    messages.append(get_user_input(user_input))
-    return messages
-
-
-def set_history(history):
-    with open(get_history_file_path(), "w") as f:
-        json.dump(history, f, indent=2)
 
 
 def get_stream(messages):

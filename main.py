@@ -20,8 +20,8 @@ MODE = "CLI"
 
 class VoiceContext:
     def __init__(self):
-        self.tts_queue = queue.Queue()
-        self.play_queue = queue.Queue()
+        self.tts_queue = queue.Queue(maxsize=32)
+        self.play_queue = queue.Queue(maxsize=32)
 
 
 def run_voice_mode():
