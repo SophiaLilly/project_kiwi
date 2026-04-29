@@ -5,10 +5,12 @@ modules/llm_funcs/__pycache__/
 
 *.wav
 
-modules/discord/token
+modules/discord/.env
 
 modules/tts_funcs/__pycache__/
 
 modules/runtime/__pycache__/
 
 *.pyc
+
+temp

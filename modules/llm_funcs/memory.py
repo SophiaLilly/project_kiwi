@@ -3,9 +3,10 @@
 
 
 # Local Imports
-from .config import get_char_config_file, get_system_message, get_user_input
+from modules.llm_funcs.config import get_char_config_file, get_system_message, format_message_for_memory
 
 # Partial Imports
+from typing import Optional
 
 # Full Imports
 import json
@@ -34,7 +35,7 @@ def get_history_file_path():
     return _history_file_path_cache
 
 
-def get_history_file_contents():
+def get_history():
     global _history_cache
     with _cache_lock:
         if _history_cache is None:
@@ -52,7 +53,7 @@ def set_history(history):
         tmp_fd, tmp_path = tempfile.mkstemp()
         try:
             with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
-                json.dump(history, f, ensure_ascii=False, separators=(',', ':'))
+                json.dump(history, f, ensure_ascii=False, separators=(',', ':'), indent=2)
             os.replace(tmp_path, get_history_file_path())
             _history_cache = history.copy()
         finally:
@@ -60,10 +61,24 @@ def set_history(history):
                 os.remove(tmp_path)
 
 
-def get_full_messages(user_input):
+def get_working_memory(limit=10):
+    global _history_cache
+    with _cache_lock:
+        history = _history_cache or get_history()
+        return history[-limit:]
+
+
+def get_full_messages(user_message):
     messages = [get_system_message()]
-    messages.extend(get_history_file_contents())
-    messages.append(get_user_input(user_input))
+    messages.extend(get_history())
+
+    current_name = user_message["content"].split(":")[0]
+    messages.append({
+        "role": "system",
+        "content": f"Current speaker: {current_name}"
+    })
+
+    messages.append(user_message)
     return messages
 
 

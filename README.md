@@ -94,8 +94,8 @@ script will run the full application, and is the recommended way to experience t
 My own to-do list:
 * [x] Remove all the external API calls and make everything run locally
 * [x] Reorganise code structure, with better modularity and separation of concerns
-* [ ] Replace JSON-based conversation memory with a vector database (probably ChromaDB)
 * [x] Re-implement voice generation and speech recognition modules.
+* [ ] Replace JSON-based conversation memory with a vector database (probably ChromaDB)
 * [ ] Implement a dynamic emotional modelling system to hook into the LLM and voice synthesis to allow for more 
 expressive and emotionally varied responses.
 
