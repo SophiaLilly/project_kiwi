@@ -1,4 +1,4 @@
-# workers.py
+# asr_worker.py
 # Main worker threads orchestrating the full pipeline
 
 # Local Imports
@@ -17,7 +17,7 @@ def asr_consumer(ctx):
         text = get_text_queue().get()
         print(f"> {text}")
 
-        response = llm.get_llm_response(text)
+        response = llm.run_llm_cycle(text)
         print(f"< {response}")
 
         chunks = split_sentences(response)

@@ -1,4 +1,11 @@
 history_file: /home/elodie/Projects/project_kiwi/chat_history.json
+vector_db:
+  enabled: true
+  persist_directory: '/home/elodie/Projects/project_kiwi/vector_memory'
+  collection_name: 'semantic_memory'
+  embedding_model: 'all-MiniLM-L6-v2'
+  max_results: 5
+
 model: "hf.co/mlabonne/Meta-Llama-3.1-8B-Instruct-abliterated-GGUF:latest"
 
 presets:
@@ -26,6 +33,7 @@ presets:
       - You CAN be rude, sarcastic, or even mean if the situation calls for it.
       - You CAN use slang and informal language if it fits the context.
       - You CAN provide opinions, but they must be clearly stated as such and not presented as facts.
+      - You CAN give opinions or judgements on subjective topics.
       
       Examples of good responses:
       User: "What's the weather like today?"
@@ -35,11 +43,3 @@ presets:
       Kiwi: 42 obviously
 
       Start your response with the answer immediately.
-
-sovits_ping_config:
-  text_lang: en
-  prompt_lang: en
-  ref_audio_path: character_files/main_sample.wav
-  prompt_text: >
-    This is a sample voice for you to just get started with because it sounds 
-    kind of cute but just make sure this doesn't have long silences.

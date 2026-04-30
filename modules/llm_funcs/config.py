@@ -20,10 +20,17 @@ def get_model():
     return get_char_config_file()['model']
 
 
-def get_system_message():
+def get_system_message(system_prompt: str = None):
     return {
         "role": "system",
-        "content": get_char_config_file()['presets']['default']['system_prompt']
+        "content": system_prompt or get_char_config_file()['presets']['default']['system_prompt']
+    }
+
+
+def get_user_message(user_message: str) -> dict:
+    return {
+        "role": "user",
+        "content": user_message
     }
 
 

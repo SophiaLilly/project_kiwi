@@ -1,15 +1,20 @@
-# dsc.py
+# modules/discord/dsc.py
 
-# Local Imports
-from modules.llm_funcs import llm
+# Local Internal Imports
+
+# Local External Imports
+from modules.llm_funcs import run_llm_cycle, format_message_for_memory
+from modules.memory import get_history, set_history, is_enabled, store_vector_memory
 
 # Partial Imports
+from datetime import datetime
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from typing import Final
 
 # Full Imports
+import asyncio
 import discord
 import logging
 import os
@@ -46,6 +51,19 @@ def create_bot() -> commands.Bot:
     )
 
 
+async def safe_send(channel, content, retries=3):
+    for attempt in range(retries):
+        try:
+            return await channel.send(content)
+        except Exception as e:
+            if attempt == retries - 1:
+                raise
+            await asyncio.sleep(1.5 * (attempt + 1))
+    else:
+        logger.error(f"Failed to send message after {retries} attempts: {content}")
+        raise RuntimeError(f"Failed to send message after {retries} attempts: {content}")
+
+
 def register_events(bot: commands.Bot) -> None:
 
     @bot.event
@@ -67,8 +85,16 @@ def register_events(bot: commands.Bot) -> None:
 
         acceptable_channels = [1473501780125028393, 1389065576953024603]
         if message.channel.id in acceptable_channels and "kiwi" in message.content.lower():
-            response = llm.get_llm_response(role="user", name=str(message.author.global_name), user_id=message.author.id, user_input=message.content)
-            await message.channel.send(response)
+            response = run_llm_cycle(role="user", name=str(message.author.global_name), user_id=message.author.id, user_input=message.content)
+            await safe_send(message.channel, response)
+        else:
+            history = get_history()
+            user_message = format_message_for_memory(role="user", name=str(message.author.global_name), user_id=message.author.id, content=message.content,
+                                                     timestamp=str(datetime.now()))
+            updated_history = history + [user_message]
+            set_history(updated_history)
+            if is_enabled():
+                store_vector_memory(message.content, "")
 
 
     @bot.event
@@ -131,5 +157,5 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
-    import asyncio
+    print("Running dsc.py as main. Is this intended?")
     asyncio.run(main())

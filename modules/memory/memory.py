@@ -1,7 +1,6 @@
 # memory.py
 # Memory management functions for conversation history
 
-
 # Local Imports
 from modules.llm_funcs.config import get_char_config_file, get_system_message, format_message_for_memory
 
@@ -28,14 +27,14 @@ def _get_cached_config():
     return _config_cache
 
 
-def get_history_file_path():
+def get_history_file_path() -> str:
     global _history_file_path_cache
     if _history_file_path_cache is None:
         _history_file_path_cache = _get_cached_config()['history_file']
     return _history_file_path_cache
 
 
-def get_history():
+def get_history() -> list:
     global _history_cache
     with _cache_lock:
         if _history_cache is None:
@@ -47,7 +46,7 @@ def get_history():
         return _history_cache.copy()  # Return copy to prevent external modification
 
 
-def set_history(history):
+def set_history(history) -> None:
     global _history_cache
     with _cache_lock:
         tmp_fd, tmp_path = tempfile.mkstemp()
@@ -61,16 +60,22 @@ def set_history(history):
                 os.remove(tmp_path)
 
 
-def get_working_memory(limit=10):
+def update_json_history(history, user_message, assistant_message) -> None:
+    updated_history = history + [user_message, assistant_message]
+    set_history(updated_history)
+
+
+def get_working_memory(limit: int = 10) -> list:
     global _history_cache
     with _cache_lock:
         history = _history_cache or get_history()
         return history[-limit:]
 
 
-def get_full_messages(user_message):
+def get_full_messages(user_message) -> list:
     messages = [get_system_message()]
-    messages.extend(get_history())
+    # messages.extend(get_history())
+    messages.extend(get_working_memory())
 
     current_name = user_message["content"].split(":")[0]
     messages.append({
@@ -82,7 +87,7 @@ def get_full_messages(user_message):
     return messages
 
 
-def clear_memory_cache():
+def clear_memory_cache() -> None:
     global _config_cache, _history_file_path_cache, _history_cache
     with _cache_lock:
         _config_cache = None

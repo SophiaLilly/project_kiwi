@@ -1,4 +1,4 @@
-# tts_funcs/workers.py
+# tts_funcs/asr_worker.py
 # TTS worker threads for voice generation and playback
 
 # Local Imports
@@ -13,7 +13,7 @@ import time
 import torch
 
 
-def tts_worker(ctx):
+def tts_consumer(ctx):
     while True:
         chunk = ctx.tts_queue.get()
         try:

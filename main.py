@@ -27,19 +27,18 @@ class VoiceContext:
 
 def run_voice_mode():
     from modules.asr_funcs.asr import run_asr
-    from modules.tts_funcs.workers import tts_worker, audio_player
-    from modules.asr_funcs.workers import asr_consumer
+    from modules.workers import asr_consumer, tts_consumer, audio_player
 
     ctx = VoiceContext()
 
     threading.Thread(target=run_asr, daemon=True).start()
     threading.Thread(target=asr_consumer, daemon=True, args=(ctx,)).start()
-    threading.Thread(target=tts_worker, daemon=True, args=(ctx,)).start()
+    threading.Thread(target=tts_consumer, daemon=True, args=(ctx,)).start()
     threading.Thread(target=audio_player, daemon=True, args=(ctx,)).start()
 
 
 def run_cli_mode():
-    from modules.llm_funcs.cli_worker import cli_consumer
+    from modules.workers import cli_consumer
 
     cli_consumer()
 

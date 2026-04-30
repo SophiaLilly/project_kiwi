@@ -2,7 +2,7 @@
 # CLI mode worker for simple text-based interaction with the LLM
 
 # Local Imports
-from modules.llm_funcs import llm
+from modules.llm_funcs import run_llm_cycle
 
 # Partial Imports
 
@@ -23,7 +23,7 @@ def cli_consumer():
             if not user_input:
                 continue
 
-            response = llm.get_llm_response(user_input)
+            response = run_llm_cycle(user_input)
             print(f"< {response}")
 
         except KeyboardInterrupt:
